@@ -1,22 +1,43 @@
 #! /bin/usr/perl -w
 
-$ref_genome="/N/u/xw63/Carbonate/daphnia/PA42.4.0";
+#The reference genome must be first indexed using the following command:
+#bwa index $ref_genome.fasta 
+
+#$ref_genome="/PATH/TO/Reference/Genome";
+$ref_genome="PA42.4.0";
+
+# The adapter file: an example (Bioo_Adapters.fa) can be found in the same directory
+#$Adapters="/PATH/TO/Adapters.fa";
 $Adapters="/N/u/xw63/Carbonate/daphnia/Bioo_Adapters.fa";
-$SampleID="PA2014";
+
+#Save all your raw reads in the DATA_DIR in a sub dir named as SampleID
+#Name you files like: 
+#SampleID-001-R1.fastq
+#SampleID-001-R2.fastq
+#SampleID-002-R1.fastq
+#SampleID-002-R2.fastq
+#......
+#SampleID-100-R1.fastq
+#SampleID-100-R2.fastq
+
+$SampleID="PA2014";  
 $DATA_DIR="/N/dc2/scratch/xw63/".$SampleID;
-$MaxNumberofSamples=123;
+$MaxNumberofSamples=100;
 $emailaddress='ouqd@hotmail.com';
+
+# The paths to the software used in this pipeline
+# You must first make sure you have these software installed and they are all functional
+ 
 $BWA="~/bwa-0.7.17/bwa";
-#$novoalign="/N/soft/rhel6/novoalign/novocraft/novoalign";
-#$novoindex="/N/u/xw63/Carbonate/daphnia/$ref_genome.ndx";
-$PICARD="~/picard-2.18.4/picard.jar";
-#$PICARD="/N/soft/rhel6/picard/2.8.1/picard.jar";
-$samtools="~/samtools-1.8-bin/bin/samtools";
-#$samtools="/N/soft/rhel6/samtools/1.3.1/bin/samtools";
+$novoalign="/N/soft/rhel6/novoalign/novocraft/novoalign";
+$novoindex="/N/u/xw63/Carbonate/daphnia/$ref_genome.ndx";
+$PICARD="/N/soft/rhel6/picard/2.8.1/picard.jar";
+$samtools="/N/soft/rhel6/samtools/1.3.1/bin/samtools";
 $Trimmomatic="~/Trimmomatic-0.36/trimmomatic-0.36.jar";
-#$fastqutils="/N/dc2/projects/daphpops/Software/ngsutils-ngsutils-0.5.9/bin/fastqutils";
-$ngsutilsj="~/ngsutilsj";
+$fastqutils="/N/dc2/projects/daphpops/Software/ngsutils-ngsutils-0.5.9/bin/fastqutils";
 $GATK="/N/soft/rhel6/gatk/3.4-0/GenomeAnalysisTK.jar";
+
+#Now we find the raw reads and produce pbs files for them
 $n=0;
 $n1=0;
 while ($n<=$MaxNumberofSamples) {
@@ -26,8 +47,8 @@ while ($n<=$MaxNumberofSamples) {
 	$nstr001= sprintf ("%03d", $n);
 	print $nstr001.": ";
 		$Sample=$DATA_DIR."/".$SampleID."-".$nstr001;
-		$Sample_R1=$DATA_DIR."/fastq/".$SampleID."-".$nstr001."_5runs_R1.fastq";
-		$Sample_R2=$DATA_DIR."/fastq/".$SampleID."-".$nstr001."_5runs_R2.fastq";
+		$Sample_R1=$DATA_DIR."/fastq/".$SampleID."-".$nstr001."-R1.fastq";
+		$Sample_R2=$DATA_DIR."/fastq/".$SampleID."-".$nstr001."-R2.fastq";
 		$OUTPUT_DIR=$DATA_DIR."/Bwa";
 		$OUTPUT=$OUTPUT_DIR."/".$SampleID."-".$nstr001;
 	print $Sample_R1."/R2.fastq";
