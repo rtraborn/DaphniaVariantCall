@@ -22,7 +22,7 @@ $Adapters="/N/u/xw63/Carbonate/daphnia/Bioo_Adapters.fa";
 
 $SampleID="PA2014";  
 $DATA_DIR="/N/dc2/scratch/xw63/".$SampleID;
-$MaxNumberofSamples=100;
+$MaxNumberofSamples=125;
 $emailaddress='ouqd@hotmail.com';
 
 # The paths to the software used in this pipeline
@@ -38,6 +38,9 @@ $fastqutils="/N/dc2/projects/daphpops/Software/ngsutils-ngsutils-0.5.9/bin/fastq
 $GATK="/N/soft/rhel6/gatk/3.4-0/GenomeAnalysisTK.jar";
 
 #Now we find the raw reads and produce pbs files for them
+
+open OUT1, ">$DATA_DIR/qsub_all_pbs.sh" or die "cannot open file: $!";
+
 $n=0;
 $n1=0;
 while ($n<=$MaxNumberofSamples) {
@@ -58,7 +61,7 @@ while ($n<=$MaxNumberofSamples) {
 		
 		$pbsfile=$DATA_DIR."/bwa-".$SampleID."-".$nstr001.".pbs";
 		print $pbsfile."\n";
-			
+		print OUT1 "\nqsub ".$pbsfile;			
 		open OUT, ">$pbsfile" or die "cannot open file: $!";
 		print OUT 
 		"	#!/bin/bash	
