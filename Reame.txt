@@ -46,9 +46,10 @@
 			...
 	./SampleID-100.pbs
 	
-4. Submit the pipeline pbs to the system for computing
+5. Submit the pipeline pbs to the system for computing
 	======================================
 		chmod 755 qsub_all_pbs.sh
 		./qsub_all_pbs.sh
 	======================================
 
+That's all, thank you!
