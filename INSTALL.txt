@@ -1,0 +1,11 @@
+##### Software needed to install separately by each user
+
+1. NGSUtils: Please go to http://ngsutils.org and download the code as follows:
+
+>$ git clone git://github.com/ngsutils/ngsutils.git
+>$ cd ngsutils
+>$ make
+
+Once this is complete, please provide a path to the bamtuils binary as requested in the appropriate {}_pipeline.sh file.
+
+
