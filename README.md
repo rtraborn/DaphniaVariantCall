@@ -15,5 +15,6 @@
 4. Execute the pipeline using the appropriate batch script on your cluster as follows:
    ```
    qsub original_pipeline.sh
-   #The batch scripts are set up for the PBS job scheduler on  IU Carbonate. Please make changes to the batch files as needed for your system.
+   # The batch scripts are set up for the PBS job scheduler on IU Carbonate. 
+   # Please make changes to the batch files as needed for your system.
    ```
