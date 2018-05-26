@@ -5,7 +5,7 @@ WD=/N/u/rtraborn/Carbonate/scratch/DaphniaVariantCall
 
 ######### Loading carbonate-specific resources (change if not using this cluster) #######
 module load java
-module load trimmomatic #this loads version 0.36
+#module load trimmomatic #this loads version 0.36
 module load fastqc
 
 ######### Paths to binaries #########
@@ -22,7 +22,7 @@ bamUtil=/N/soft/rhel6/bamUtil/1.0.13/bam
 fastqutils=/N/u/rtraborn/Carbonate/scratch/DaphniaVariantCall/software/ngsutils/bin/fastqutils
 
 ####### Path to adapters #######
-adapterTrim=../adapters/KAP-00074_Adapters.fa
+adapterTrim=../adapters/Bioo_Adapters.fa
 
 ###### Misc names ######
 assemblyName=PA42_with_mt.fasta
@@ -30,8 +30,8 @@ novoIndexName=PA42_with_mt.ndx
 sequenceDict=PA42_with_mt.dict
 
 ##### Sequence names #####
-clone_R1=KAP-00074_CGCTGATC_L008_R2_001.fastq
-clone_R2=KAP-00074_CGCTGATC_L008_R2_001.fastq
+clone1_R1=KAP-00074_CGCTGATC_L008_R2_001.fastq
+clone1_R2=KAP-00074_CGCTGATC_L008_R2_001.fastq
 
 cd $WD
 
@@ -43,7 +43,6 @@ echo "Creating a symbolic link to the PA42 assembly"
 mkdir assembly
 cd assembly
 ln -s /N/dc2/projects/daphpops/PA42_with_mt/PA42_with_mt.fasta $assemblyName
-cd ..
 
 echo "Making a Novoalign index file."
 $novoindex $novoIndexName $assemblyName
@@ -58,13 +57,13 @@ $picard CreateSequenceDictionary R=$assemblyName O=$sequenceDict
 # 0. Performing fastqc on sample
 
 echo "Performing fastqc on read pairs for this sample."
+cd ../fastq
 fastqc $clone_R1 $clone_R2 
 
 # 1. After preparing the FASTA file of adapter sequences, trim adapter sequences from sequence reads.
 
 echo "Trimming adapter sequences from sequence reads."
-cd fastq
-$Trimmomatic PE $clone_R1 $clone_R2 KAP-00074_15lanes_R1-paired.fastq KAP-00074_15lanes_R1-unpaired.fastq KAP-00074_15lanes_R2-paired.fastq KAP-00074_15lanes_R2-unpaired.fastq HEADCROP:3 ILLUMINACLIP:$adapterTrim:2:30:10:2 SLIDINGWINDOW:4:15 MINLEN:30
+$Trimmomatic PE $clone1_R1 $clone1_R2 KAP-00074_15lanes_R1-paired.fastq KAP-00074_15lanes_R1-unpaired.fastq KAP-00074_15lanes_R2-paired.fastq KAP-00074_15lanes_R2-unpaired.fastq HEADCROP:3 ILLUMINACLIP:$adapterTrim:2:30:10:2 SLIDINGWINDOW:4:15 MINLEN:30
 
 # The additional information on Trimmomatic arguments was omitted because it is available in the Trimmomatic documentation.
 
@@ -108,7 +107,7 @@ $picard MarkDuplicates INPUT=RG_Sorted_KAP-00074_PA42_with_mt.bam OUTPUT=dedup_R
 $picard BuildBamIndex INPUT=dedup_RG_Sorted_KAP-00074_PA42_with_mt.bam
 
 # 10. Define intervals to target for the local realignment.
-$GATK -T RealignerTargetCreator -R ../assembly/$assemblyName $ -I dedup_RG_Sorted_KAP-00074_PA42_with_mt.bam -o KAP-00074_PA42_with_mt.intervals
+$GATK -T RealignerTargetCreator -R ../assembly/$assemblyName -I dedup_RG_Sorted_KAP-00074_PA42_with_mt.bam -o KAP-00074_PA42_with_mt.intervals
 
 # 11. Locally realign reads around indels.
 $GATK -T IndelRealigner -R ../assembly/$assemblyName -I dedup_RG_Sorted_KAP-00074_PA42_with_mt.bam -targetIntervals KAP-00074_PA42_with_mt.intervals -o realigned_dedup_RG_Sorted_KAP-00074_PA42_with_mt.bam
