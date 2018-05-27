@@ -54,26 +54,30 @@ echo "Making a dictionary file of a reference."
 # The Java version should not matter as long as it works. (ed: ?)
 $picard CreateSequenceDictionary R=$assemblyName O=$sequenceDict
 
-# 0. Performing fastqc on sample
+# 0. Performing fastqc on sample (uncomment to run this step)
 
-echo "Performing fastqc on read pairs for this sample."
-cd ../fastq
-fastqc $clone_R1 $clone_R2 
+#echo "Performing fastqc on read pairs for this sample."
+#cd ../fastq
+#fastqc $clone_R1 $clone_R2 
 
 # 1. After preparing the FASTA file of adapter sequences, trim adapter sequences from sequence reads.
 
 echo "Trimming adapter sequences from sequence reads."
 $Trimmomatic PE $clone1_R1 $clone1_R2 KAP-00074_15lanes_R1-paired.fastq KAP-00074_15lanes_R1-unpaired.fastq KAP-00074_15lanes_R2-paired.fastq KAP-00074_15lanes_R2-unpaired.fastq HEADCROP:3 ILLUMINACLIP:$adapterTrim:2:30:10:2 SLIDINGWINDOW:4:15 MINLEN:30
 
-# The additional information on Trimmomatic arguments was omitted because it is available in the Trimmomatic documentation.
+# The additional information originally provided on Trimmomatic arguments was omitted because it is available in the Trimmomatic documentation.
 
 # 2. Building the Hisat2 index using the assembly
 
-hisat2-build ../assembly/$assemblyName ../assembly/${assemblyID}.hisat2_index
+cd ../assembly
+hisat2-build $assemblyName ${assemblyID}.hisat2_index
+cd ..
 
 # 3. Map reads to the reference sequence using Hisat2.
 echo "Mapping reads to the reference genome using Hisat2."
+cd fastq
 ln -s ../assembly/${assemblyID}.hisat2_index ${assemblyID}.hisat2_index 
+ln -s ../assembly/${assemblyName} ${assemblyName}
 hisat2 $assemblyName -x $assemblyID -1 KAP-00074_15lanes_R1-paired.8.fastq -2 KAP-00074_15lanes_R2-paired.8.fastq -S KAP-00074_PA42_with_mt-paired.8.sam
 
 # 4. Convert the SAM file to the BAM file.
