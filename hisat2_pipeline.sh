@@ -18,7 +18,8 @@ bamUtil=/N/soft/rhel6/bamUtil/1.0.13/bam
 
 # please install ngsutils (see INSTALL.txt for instructions)
 # then, provide the path to the fastqutils binary 
-fastqutils=/N/u/rtraborn/Carbonate/scratch/DaphniaVariantCall/software/ngsutils/bin/fastqutils
+# please note that fastqutils is only required for the original pipeline (i.e. the one using novoalign)
+# fastqutils=/N/u/rtraborn/Carbonate/scratch/DaphniaVariantCall/software/ngsutils/bin/fastqutils
 
 ####### Path to adapters #######
 adapterTrim=../adapters/Bioo_Adapters.fa
