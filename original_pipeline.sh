@@ -95,30 +95,39 @@ $picard MergeSamFiles I=KAP-00074_PA42_with_mt-paired.1.sam I=KAP-00074_PA42_wit
 $samtools view -bS KAP-00074_PA42_with_mt.sam > KAP-00074_PA42_with_mt.bam
 
 # 6. Sort the BAM file using Picard.
+echo "Sorting the bam file using Picard."
 $picard SortSam INPUT=KAP-00074_PA42_with_mt.bam OUTPUT=Sorted_KAP-00074_PA42_with_mt.bam SORT_ORDER=coordinate
 
 # 7. Add read groups to the sorted BAM file.
+echo "Adding read groups to the sorted bam file."
 $picard AddOrReplaceReadGroups INPUT=Sorted_KAP-00074_PA42_with_mt.bam OUTPUT=RG_Sorted_KAP-00074_PA42_with_mt.bam RGID=Daphnia RGLB=bar RGPL=illumina RGSM=KAP-00074 RGPU=6
 
 # 8. Mark duplicate reads.
+echo "Marking duplicates using Picard."
 $picard MarkDuplicates INPUT=RG_Sorted_KAP-00074_PA42_with_mt.bam OUTPUT=dedup_RG_Sorted_KAP-00074_PA42_with_mt.bam METRICS_FILE=KAP-00074_PA42_with_mt_metrics.txt
 
 # 9. Index the BAM file using Picard.
+echo "Indexing the bam file using Picard."
 $picard BuildBamIndex INPUT=dedup_RG_Sorted_KAP-00074_PA42_with_mt.bam
 
 # 10. Define intervals to target for the local realignment.
+echo "Defining intervals to target for local realignment using Picard."
 $GATK -T RealignerTargetCreator -R ../assembly/$assemblyName -I dedup_RG_Sorted_KAP-00074_PA42_with_mt.bam -o KAP-00074_PA42_with_mt.intervals
 
 # 11. Locally realign reads around indels.
+echo "Performing the local realignment using Picard."
 $GATK -T IndelRealigner -R ../assembly/$assemblyName -I dedup_RG_Sorted_KAP-00074_PA42_with_mt.bam -targetIntervals KAP-00074_PA42_with_mt.intervals -o realigned_dedup_RG_Sorted_KAP-00074_PA42_with_mt.bam
 
 # 12. Clip overlapping read pairs.
+echo "Clipping the overlapping read pairs using bamUtil."
 $bamUtil clipOverlap --in realigned_dedup_RG_Sorted_KAP-00074_PA42_with_mt.bam --out Clipped_realigned_dedup_RG_Sorted_KAP-00074_PA42_with_mt.bam
 
 # 13. Index the clipped BAM file using Samtools
+echo "Indexing the clipped BAM file using Samtools."
 $samtools index Clipped_realigned_dedup_RG_Sorted_KAP-00074_PA42_with_mt.bam
 
 # 14. Make the mpileup file from the BAM file.
+echo "Creating the mpileup file from the BAM file."
 $samtools mpileup -f ../assembly/$assemblyName Clipped_realigned_dedup_RG_Sorted_KAP-00074_PA42_with_mt.bam > KAP-00074_PA42_with_mt.mpileup
 
 # Remaining issues:

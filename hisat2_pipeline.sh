@@ -44,9 +44,6 @@ mkdir assembly
 cd assembly
 ln -s /N/dc2/projects/daphpops/PA42_with_mt/PA42_with_mt.fasta $assemblyName
 
-echo "Making a Novoalign index file."
-$novoindex $novoIndexName $assemblyName
-
 echo "Making a samtools index file"
 $samtools faidx $assemblyName
 
@@ -59,33 +56,33 @@ $picard CreateSequenceDictionary R=$assemblyName O=$sequenceDict
 #echo "Performing fastqc on read pairs for this sample."
 #cd ../fastq
 #fastqc $clone_R1 $clone_R2 
+#cd ..
 
 # 1. After preparing the FASTA file of adapter sequences, trim adapter sequences from sequence reads.
 
 echo "Trimming adapter sequences from sequence reads."
+cd ../fastq
 $Trimmomatic PE $clone1_R1 $clone1_R2 KAP-00074_15lanes_R1-paired.fastq KAP-00074_15lanes_R1-unpaired.fastq KAP-00074_15lanes_R2-paired.fastq KAP-00074_15lanes_R2-unpaired.fastq HEADCROP:3 ILLUMINACLIP:$adapterTrim:2:30:10:2 SLIDINGWINDOW:4:15 MINLEN:30
+cd ..
 
 # The additional information originally provided on Trimmomatic arguments was omitted because it is available in the Trimmomatic documentation.
 
 # 2. Building the Hisat2 index using the assembly
 
-cd ../assembly
-hisat2-build $assemblyName ${assemblyID}.hisat2_index
-cd ..
+cd assembly
+hisat2-build $assemblyName $assemblyID
 
 # 3. Map reads to the reference sequence using Hisat2.
 echo "Mapping reads to the reference genome using Hisat2."
-cd fastq
-ln -s ../assembly/${assemblyID}.hisat2_index ${assemblyID}.hisat2_index 
-ln -s ../assembly/${assemblyName} ${assemblyName}
-hisat2 $assemblyName -x $assemblyID -1 KAP-00074_15lanes_R1-paired.8.fastq -2 KAP-00074_15lanes_R2-paired.8.fastq -S KAP-00074_PA42_with_mt-paired.8.sam
+hisat2 --no-spliced-alignment -q -x $assemblyID -1 ../fastq/KAP-00074_15lanes_R1-paired.fastq -2 ../fastq/KAP-00074_15lanes_R2-paired.fastq -S ../fastq/KAP-00074_PA42_with_mt.sam
 
 # 4. Convert the SAM file to the BAM file.
 echo "Converting the sam file to bam."
+cd ../fastq
 $samtools view -bS KAP-00074_PA42_with_mt.sam > KAP-00074_PA42_with_mt.bam
 
 # 5. Sort the BAM file using Picard.
-echo "Soring the bam file using Picard."
+echo "Sorting the bam file using Picard."
 $picard SortSam INPUT=KAP-00074_PA42_with_mt.bam OUTPUT=Sorted_KAP-00074_PA42_with_mt.bam SORT_ORDER=coordinate
 
 # 6. Add read groups to the sorted BAM file.
@@ -118,7 +115,7 @@ $samtools index Clipped_realigned_dedup_RG_Sorted_KAP-00074_PA42_with_mt.bam
 
 # 13. Make the mpileup file from the BAM file.
 echo "Creating the mpileup file from the BAM file."
-$samtools mpileup -f ../assembly/$assemblyName Clipped_realigned_dedup_RG_Sorted_KAP-00074_PA42_with_mt.bam > KAP-00074_PA42_with_mt.mpileup
+$samtools mpileup -f ../assembly/$assemblyName Clipped_realigned_dedup_RG_Sorted_KAP-00074_PA42_with_mt.bam -o KAP-00074_PA42_with_mt.mpileup
 
 # Remaining issues:
 # 1. Some Java in the IU computing system (e.g., java/1.7.0_51 on Mason) fail to create the virtual machine.
