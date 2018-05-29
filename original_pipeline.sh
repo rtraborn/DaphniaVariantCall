@@ -56,9 +56,9 @@ $picard CreateSequenceDictionary R=$assemblyName O=$sequenceDict
 
 # 0. Performing fastqc on sample
 
-echo "Performing fastqc on read pairs for this sample."
+#echo "Performing fastqc on read pairs for this sample."
 cd ../fastq
-fastqc $clone_R1 $clone_R2 
+#fastqc $clone_R1 $clone_R2 
 
 # 1. After preparing the FASTA file of adapter sequences, trim adapter sequences from sequence reads.
 

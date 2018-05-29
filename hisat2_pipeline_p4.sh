@@ -15,6 +15,7 @@ picard='java -jar /N/soft/rhel6/picard/2.8.1/picard.jar'
 Trimmomatic='java -jar /N/dc2/projects/daphpops/Software/Trimmomatic-0.36/trimmomatic-0.36.jar'
 GATK='java -jar /N/soft/rhel6/gatk/3.4-0/GenomeAnalysisTK.jar'
 bamUtil=/N/soft/rhel6/bamUtil/1.0.13/bam
+nThreads=4
 
 # please install ngsutils (see INSTALL.txt for instructions)
 # then, provide the path to the fastqutils binary 
@@ -74,7 +75,7 @@ hisat2-build $assemblyName $assemblyID
 
 # 3. Map reads to the reference sequence using Hisat2.
 echo "Mapping reads to the reference genome using Hisat2."
-hisat2 --no-spliced-alignment -q -x $assemblyID -1 ../fastq/KAP-00074_15lanes_R1-paired.fastq -2 ../fastq/KAP-00074_15lanes_R2-paired.fastq -S ../fastq/KAP-00074_PA42_with_mt.sam
+hisat2 -p $nThreads --no-spliced-alignment -q -x $assemblyID -1 ../fastq/KAP-00074_15lanes_R1-paired.fastq -2 ../fastq/KAP-00074_15lanes_R2-paired.fastq -S ../fastq/KAP-00074_PA42_with_mt.sam
 
 # 4. Convert the SAM file to the BAM file.
 echo "Converting the sam file to bam."
