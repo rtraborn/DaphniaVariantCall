@@ -78,13 +78,12 @@ $picard CreateSequenceDictionary R=$assemblyName O=$sequenceDict
 echo "Trimming adapter sequences from sequence reads."
 cd ../fastq
 $Trimmomatic PE ${CloneID}_merged_R1.fastq ${CloneID}_merged_R2.fastq ${CloneID}_R1-paired.fastq ${CloneID}_R1-unpaired.fastq ${CloneID}_R2-paired.fastq ${CloneID}_R2-unpaired.fastq HEADCROP:3 ILLUMINACLIP:$adapterTrim:2:30:10:2 SLIDINGWINDOW:4:15 MINLEN:30
-cd ..
 
 # The additional information on Trimmomatic arguments was omitted because it is available in the Trimmomatic documentation.
 
 echo "Splitting the fastq files into 8 parts. We are doing this because we are using the free version of Novoalign, which does not permit multi-threading."
-$fastqutils split ${CloneID}_R1-paired.fastq ${CloneID}_R1-paired.fastq 8 &
-$fastqutils split ${CloneID}_R2-paired.fastq ${CloneID}_R2-paired.fastq 8 &
+$fastqutils split ${CloneID}_R1-paired.fastq ${CloneID}_R1-paired 8 &
+$fastqutils split ${CloneID}_R2-paired.fastq ${CloneID}_R2-paired 8 &
 #$fastqutils split ${CloneID}_merged_R1_unpaired.fastq ${CloneID}_merged_R1_unpaired.fastq 8 &
 #$fastqutils split ${CloneID}_merged_R2_unpaired.fastq ${CloneID}_merged_R2_unpaired.fastq 8 &
 
@@ -95,12 +94,13 @@ wait
 for i in {1..8}; do
 $novoalign -d ../assembly/$novoIndexName -r None -o Sam -f ${CloneID}_R1-paired.${i}.fastq ${CloneID}_R2-paired.${i}.fastq > ${CloneID}_${assemblyID}.${i}.sam &
 #$novoalign -d ../assembly/$novoIndexName -r None -o Sam -f ${CloneID}_R1-unpaired.${i}.fastq ${CloneID}_R2-unpaired.${i}.fastq > ${CloneID}_${assemblyID}_unpaired.${i}.sam &
+done
 wait
 
 # 4. Combine the SAM files using Picard.
 echo "Combining the SAM files using Picard."
 
-$picard MergeSamFiles  I=${CloneID}_${assemblyID}.1.sam I=${CloneID}_${assemblyID}.2.sam I=${CloneID}_${assemblyID}.3.sam I=${CloneID}_${assemblyID}.4.sam ${CloneID}_${assemblyID}.5.sam ${CloneID}_${assemblyID}.6.sam ${CloneID}_${assemblyID}.7.sam ${CloneID}_${assemblyID}.8.sam O=${CloneID}_${assemblyID}.sam
+$picard MergeSamFiles I=${CloneID}_${assemblyID}.1.sam I=${CloneID}_${assemblyID}.2.sam I=${CloneID}_${assemblyID}.3.sam I=${CloneID}_${assemblyID}.4.sam I=${CloneID}_${assemblyID}.5.sam I=${CloneID}_${assemblyID}.6.sam I=${CloneID}_${assemblyID}.7.sam I=${CloneID}_${assemblyID}.8.sam O=${CloneID}_${assemblyID}.sam
 
 # 5. Convert the SAM file to the BAM file.
 echo "Converting the file from SAM to BAM format."
