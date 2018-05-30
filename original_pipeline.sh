@@ -31,6 +31,7 @@ adapterTrim=../adapters/Bioo_Adapters.fa
 
 ###### Misc names ######
 assemblyName=PA42_with_mt.fasta
+assemblyID=PA42_4
 novoIndexName=PA42_with_mt.ndx
 sequenceDict=PA42_with_mt.dict
 
