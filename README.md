@@ -15,9 +15,9 @@
 4. Execute the pipeline using the appropriate batch script on your cluster as follows:
    ```
    # To run the original pipeline (i.e. with Novoalign)
-   # Please make changes to the pipeline (original_pipeline.sh) and batch files as needed for your system.
+   # Please make changes to the pipeline (original_pipeline_novoalign.sh) and batch files as needed for your system.
    # The batch scripts are set up for the PBS job scheduler on IU Carbonate. 
-   qsub original_batch.sh
+   qsub original_batch_novoalign.sh
    # To run the Hisat2 pipeline:
    # Please make changes to the pipeline (hisat2_pipeline.sh) and batch files as needed for your system.
    qsub hisat2_batch.sh                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
