@@ -7,14 +7,23 @@
 #### To run this code on your system, please do the following:
 1. Clone the repository on your system as follows:
    ```
-   git clone https://github.com/rtraborn/DaphniaVariantCall
+   git clone https://github.com/LynchLab/DaphniaVariantCall
    cd DaphniaVariantCall
    ```
 2. Install `NGSUtils` on your system. Please consult `INSTALL.txt` for instructions.
 3. Update the links in the pipeline (e.g. `original_pipeline.sh`) that you would like to test using your favorite text editor.
 4. Execute the pipeline using the appropriate batch script on your cluster as follows:
    ```
-   qsub original_pipeline.sh
+   # To run the original pipeline (i.e. with Novoalign)
+   # Please make changes to the pipeline (original_pipeline.sh) and batch files as needed for your system.
    # The batch scripts are set up for the PBS job scheduler on IU Carbonate. 
-   # Please make changes to the batch files as needed for your system.
+   qsub original_batch.sh
+   # To run the Hisat2 pipeline:
+   # Please make changes to the pipeline (hisat2_pipeline.sh) and batch files as needed for your system.
+   qsub hisat2_batch.sh                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
+   
+  
+  
+   
+   
    ```
