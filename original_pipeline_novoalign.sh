@@ -7,11 +7,11 @@ WD=/N/u/rtraborn/Carbonate/scratch/DaphniaVariantCall
 module load java
 #module load trimmomatic #this loads version 0.36
 module load fastqc
+module load samtools # this will load Samtools v 1.5 on Carbonate
 
 ######### Paths to binaries #########
 novoindex=/N/soft/rhel6/novoalign/novocraft/novoindex
 novoalign=/N/soft/rhel6/novoalign/novocraft/novoalign
-samtools=/N/soft/rhel6/samtools/1.3.1/bin/samtools
 picard='java -jar /N/soft/rhel6/picard/2.8.1/picard.jar'
 Trimmomatic='java -jar /N/dc2/projects/daphpops/Software/Trimmomatic-0.36/trimmomatic-0.36.jar'
 GATK='java -jar /N/soft/rhel6/gatk/3.4-0/GenomeAnalysisTK.jar'
@@ -62,7 +62,7 @@ echo "Making a Novoalign index file."
 $novoindex $novoIndexName $assemblyName
 
 echo "Making a samtools index file"
-$samtools faidx $assemblyName
+samtools faidx $assemblyName
 
 echo "Making a dictionary file of a reference."
 # The Java version should not matter as long as it works. (ed: ?)
@@ -104,8 +104,8 @@ echo "Combining the SAM files using Picard."
 $picard MergeSamFiles I=${CloneID}_${assemblyID}.1.sam I=${CloneID}_${assemblyID}.2.sam I=${CloneID}_${assemblyID}.3.sam I=${CloneID}_${assemblyID}.4.sam I=${CloneID}_${assemblyID}.5.sam I=${CloneID}_${assemblyID}.6.sam I=${CloneID}_${assemblyID}.7.sam I=${CloneID}_${assemblyID}.8.sam O=${CloneID}_${assemblyID}.sam
 
 # 5. Convert the SAM file to the BAM file.
-echo "Converting the file from SAM to BAM format."
-$samtools view -bS ${CloneID}_${assemblyID}.sam > ${CloneID}_${assemblyID}.bam
+echo "Converting the file from SAM to BAM format and removing non-primary alignments."
+samtools view -b -F 256 ${CloneID}_${assemblyID}.sam > ${CloneID}_${assemblyID}.bam 
 
 # 6. Sort the BAM file using Picard.
 echo "Sorting the bam file using Picard."
@@ -137,15 +137,8 @@ $bamUtil clipOverlap --in ${CloneID}_${assemblyID}_sorted_rg_dedup_realigned.bam
 
 # 13. Index the clipped BAM file using Samtools
 echo "Indexing the clipped BAM file using Samtools."
-$samtools index ${CloneID}_${assemblyID}_sorted_rg_dedup_realigned_clip.bam
+samtools index ${CloneID}_${assemblyID}_sorted_rg_dedup_realigned_clip.bam
 
 # 14. Make the mpileup file from the BAM file.
 echo "Creating the mpileup file from the BAM file."
-$samtools mpileup -f ../assembly/$assemblyName ${CloneID}_${assemblyID}_sorted_rg_dedup_realigned_clip.bam -o ${CloneID}_${assemblyID}.mpileup
-
-# Remaining issues (Ed: these are notes from from the original pipeline.)
-# 1. Some Java in the IU computing system (e.g., java/1.7.0_51 on Mason) fail to create the virtual machine.
-# 2. Need to explore how to specify optimal memory options for using Java to avoid the memory issues.
-# 3. Should understand the meanings of the read groups better.
-# 4. They might change the version of Novoalign in the directory in the future.
-# 5. Samtools 1.3.1 in the directory cannot be used on Big Red II.  Samtools in general needs to be used by using "module load" on Big Red II.
+samtools mpileup -f ../assembly/$assemblyName ${CloneID}_${assemblyID}_sorted_rg_dedup_realigned_clip.bam -o ${CloneID}_${assemblyID}.mpileup

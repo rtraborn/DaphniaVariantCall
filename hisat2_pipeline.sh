@@ -96,7 +96,7 @@ echo "Mapping reads to the reference genome using Hisat2."
 hisat2 --no-spliced-alignment -p $nThreads -q -x $assemblyID -1 ../fastq/${CloneID}_R1-paired.fastq -2 ../fastq/${CloneID}_R2-paired.fastq -S ../fastq/${CloneID}_${assemblyID}.sam
 
 # 4. Convert the SAM file to the BAM file.
-echo "Converting the sam file to bam."
+echo "Converting the sam file to bam and removing non-primary alignments."
 cd ../fastq
 samtools view -b -F 256 ${CloneID}_${assemblyID}.sam > ${CloneID}_${assemblyID}.bam 
 

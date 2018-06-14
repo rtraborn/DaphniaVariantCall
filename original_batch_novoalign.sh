@@ -10,6 +10,6 @@ WD=/N/u/rtraborn/Carbonate/scratch/DaphniaVariantCall
 
 cd $WD
 
-time ./original_pipeline.sh
+time ./original_pipeline_novoalign.sh
 
 exit
