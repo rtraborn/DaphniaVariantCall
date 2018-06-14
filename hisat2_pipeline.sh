@@ -8,13 +8,17 @@ module load java
 #module load trimmomatic #this loads version 0.36
 module load fastqc
 module load hisat2
+module load samtools # this will load Samtools v 1.5 on Carbonate
 
 ######### Paths to binaries #########
-samtools=/N/soft/rhel6/samtools/1.3.1/bin/samtools
 picard='java -jar /N/soft/rhel6/picard/2.8.1/picard.jar'
 Trimmomatic='java -jar /N/dc2/projects/daphpops/Software/Trimmomatic-0.36/trimmomatic-0.36.jar'
 GATK='java -jar /N/soft/rhel6/gatk/3.4-0/GenomeAnalysisTK.jar'
 bamUtil=/N/soft/rhel6/bamUtil/1.0.13/bam
+
+######### Paths to assembly ######
+assemblyDir=/N/u/rtraborn/Carbonate/scratch/PA42_4_0
+assemblyName=PA42.4.0.fasta
 
 ######### Paths to reads #########
 fastqBase=/N/dc2/projects/daphpops/Population_samples/KAP2013/140501
@@ -30,13 +34,11 @@ CloneID=KAP-00074
 adapterTrim=../adapters/Bioo_Adapters.fa
 
 ###### Misc names ######
-assemblyID=PA42_4
-assemblyName=PA42_with_mt.fasta
-sequenceDict=PA42_with_mt.dict
+assemblyID=PA42_4_0
+sequenceDict=$(basename $assemblyName .fasta).dict
 
 ##### Number of threads #####
 nThreads=8
-
 
 cd $WD
 
@@ -59,10 +61,10 @@ cd ..
 echo "Creating a symbolic link to the PA42 assembly"
 mkdir assembly
 cd assembly
-ln -s /N/dc2/projects/daphpops/PA42_with_mt/PA42_with_mt.fasta $assemblyName
+ln -s ${assemblyDir}/${assemblyName} $assemblyName
 
 echo "Making a samtools index file"
-$samtools faidx $assemblyName
+samtools faidx $assemblyName
 
 echo "Making a dictionary file of a reference."
 # The Java version should not matter as long as it works. (ed: ?)
@@ -96,7 +98,7 @@ hisat2 --no-spliced-alignment -p $nThreads -q -x $assemblyID -1 ../fastq/${Clone
 # 4. Convert the SAM file to the BAM file.
 echo "Converting the sam file to bam."
 cd ../fastq
-$samtools view -bS ${CloneID}_${assemblyID}.sam > ${CloneID}_${assemblyID}.bam 
+samtools view -b -F 256 ${CloneID}_${assemblyID}.sam > ${CloneID}_${assemblyID}.bam 
 
 # 5. Sort the BAM file using Picard.
 echo "Sorting the bam file using Picard."
@@ -116,11 +118,11 @@ $picard BuildBamIndex INPUT=${CloneID}_${assemblyID}_sorted_rg_dedup.bam
 
 # 9. Define intervals to target for the local realignment.
 echo "Defining intervals to target for local realignment using Picard."
-$GATK -T RealignerTargetCreator -R ../assembly/$assemblyName -I ${CloneID}_${assemblyID}_sorted_rg_dedup.bam -o ${CloneID}_${assemblyID}.intervals
+$GATK -T RealignerTargetCreator -R ${WD}/assembly/${assemblyName} -I ${CloneID}_${assemblyID}_sorted_rg_dedup.bam -o ${CloneID}_${assemblyID}.intervals
 
 # 10. Locally realign reads around indels.
 echo "Performing the local realignment using Picard."
-$GATK -T IndelRealigner -R ../assembly/$assemblyName -I ${CloneID}_${assemblyID}_sorted_rg_dedup.bam -targetIntervals ${CloneID}_${assemblyID}.intervals -o ${CloneID}_${assemblyID}_sorted_rg_dedup_realigned.bam
+$GATK -T IndelRealigner -R ${WD}/assembly/${assemblyName} -I ${CloneID}_${assemblyID}_sorted_rg_dedup.bam -targetIntervals ${CloneID}_${assemblyID}.intervals -o ${CloneID}_${assemblyID}_sorted_rg_dedup_realigned.bam
 
 # 11. Clip overlapping read pairs.
 echo "Clipping the overlapping read pairs using bamUtil."
@@ -128,8 +130,8 @@ $bamUtil clipOverlap --in ${CloneID}_${assemblyID}_sorted_rg_dedup_realigned.bam
 
 # 12. Index the clipped BAM file using Samtools
 echo "Indexing the clipped BAM file using Samtools."
-$samtools index ${CloneID}_${assemblyID}_sorted_rg_dedup_realigned_clip.bam
+samtools index ${CloneID}_${assemblyID}_sorted_rg_dedup_realigned_clip.bam
 
 # 13. Make the mpileup file from the BAM file.
 echo "Creating the mpileup file from the BAM file."
-$samtools mpileup -f ../assembly/$assemblyName ${CloneID}_${assemblyID}_sorted_rg_dedup_realigned_clip.bam -o ${CloneID}_${assemblyID}.mpileup
+samtools mpileup -f ../assembly/$assemblyName ${CloneID}_${assemblyID}_sorted_rg_dedup_realigned_clip.bam -o ${CloneID}_${assemblyID}.mpileup
