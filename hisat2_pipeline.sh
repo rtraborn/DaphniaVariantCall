@@ -93,7 +93,12 @@ hisat2-build $assemblyName $assemblyID
 
 # 3. Map reads to the reference sequence using Hisat2.
 echo "Mapping reads to the reference genome using Hisat2."
+if [ -s ../fastq/${CloneID}_R1-unpaired.fastq ] || [ -s ../fastq/${CloneID}_R2-unpaired.fastq ];
+then echo "One of the unpaired read files are empty"
 hisat2 --no-spliced-alignment -p $nThreads -q -x $assemblyID -1 ../fastq/${CloneID}_R1-paired.fastq -2 ../fastq/${CloneID}_R2-paired.fastq -S ../fastq/${CloneID}_${assemblyID}.sam
+else echo "All of the read files are fine."
+hisat2 --no-spliced-alignment -p $nThreads -q -x $assemblyID -1 ../fastq/${CloneID}_R1-paired.fastq -2 ../fastq/${CloneID}_R2-paired.fastq -U ../fastq/${CloneID}_R1-unpaired.fastq ../fastq/${CloneID}_R2-unpaired.fastq  -S ../fastq/${CloneID}_${assemblyID}.sam
+fi
 
 # 4. Convert the SAM file to the BAM file.
 echo "Converting the sam file to bam and removing non-primary alignments."

@@ -85,23 +85,28 @@ $Trimmomatic PE ${CloneID}_merged_R1.fastq ${CloneID}_merged_R2.fastq ${CloneID}
 echo "Splitting the fastq files into 8 parts. We are doing this because we are using the free version of Novoalign, which does not permit multi-threading."
 $fastqutils split ${CloneID}_R1-paired.fastq ${CloneID}_R1-paired 8 &
 $fastqutils split ${CloneID}_R2-paired.fastq ${CloneID}_R2-paired 8 &
-#$fastqutils split ${CloneID}_merged_R1_unpaired.fastq ${CloneID}_merged_R1_unpaired.fastq 8 &
-#$fastqutils split ${CloneID}_merged_R2_unpaired.fastq ${CloneID}_merged_R2_unpaired.fastq 8 &
+$fastqutils split ${CloneID}_R1-unpaired.fastq ${CloneID}_R1-unpaired 8 &
+$fastqutils split ${CloneID}_R2-unpaired.fastq ${CloneID}_R2-unpaired 8 &
 
 wait
 
 # 3. Map reads to the reference sequence.
 
 for i in {1..8}; do
-$novoalign -d ../assembly/$novoIndexName -r None -o Sam -f ${CloneID}_R1-paired.${i}.fastq ${CloneID}_R2-paired.${i}.fastq > ${CloneID}_${assemblyID}.${i}.sam &
-#$novoalign -d ../assembly/$novoIndexName -r None -o Sam -f ${CloneID}_R1-unpaired.${i}.fastq ${CloneID}_R2-unpaired.${i}.fastq > ${CloneID}_${assemblyID}_unpaired.${i}.sam &
+    $novoalign -d ../assembly/$novoIndexName -r None -o Sam -f ${CloneID}_R1-paired.${i}.fastq ${CloneID}_R2-paired.${i}.fastq > ${CloneID}_${assemblyID}.${i}.sam &
+    if [ -s ../fastq/${CloneID}_R1-unpaired.${i}.fastq ]; then
+	$novoalign -d ../assembly/$novoIndexName -r None -o Sam -f ${CloneID}_R1-unpaired.${i}.fastq > ${CloneID}_${assemblyID}_R1_u.${i}.sam &
+	$novoalign -d ../assembly/$novoIndexName -r None -o Sam -f ${CloneID}_R2-unpaired.${i}.fastq > ${CloneID}_${assemblyID}_R2_u.${i}.sam &
+    else 
+	continue
+    fi
 done
 wait
 
 # 4. Combine the SAM files using Picard.
 echo "Combining the SAM files using Picard."
 
-$picard MergeSamFiles I=${CloneID}_${assemblyID}.1.sam I=${CloneID}_${assemblyID}.2.sam I=${CloneID}_${assemblyID}.3.sam I=${CloneID}_${assemblyID}.4.sam I=${CloneID}_${assemblyID}.5.sam I=${CloneID}_${assemblyID}.6.sam I=${CloneID}_${assemblyID}.7.sam I=${CloneID}_${assemblyID}.8.sam O=${CloneID}_${assemblyID}.sam
+$picard MergeSamFiles I=${CloneID}_${assemblyID}.1.sam I=${CloneID}_${assemblyID}.2.sam I=${CloneID}_${assemblyID}.3.sam I=${CloneID}_${assemblyID}.4.sam I=${CloneID}_${assemblyID}.5.sam I=${CloneID}_${assemblyID}.6.sam I=${CloneID}_${assemblyID}.7.sam I=${CloneID}_${assemblyID}.8.sam I=${CloneID}_${assemblyID}_R1_u.1.sam I=${CloneID}_${assemblyID}_R1_u.2.sam I=${CloneID}_${assemblyID}_R1_u.3.sam I=${CloneID}_${assemblyID}_R1_u.4.sam I=${CloneID}_${assemblyID}_R1_u.5.sam I=${CloneID}_${assemblyID}_R1_u.6.sam I=${CloneID}_${assemblyID}_R1_u.7.sam I=${CloneID}_${assemblyID}_R1_u.8.sam I=${CloneID}_${assemblyID}_R2_u.1.sam I=${CloneID}_${assemblyID}_R2_u.2.sam I=${CloneID}_${assemblyID}_R2_u.3.sam I=${CloneID}_${assemblyID}_R2_u.4.sam I=${CloneID}_${assemblyID}_R2_u.5.sam I=${CloneID}_${assemblyID}_R2_u.6.sam I=${CloneID}_${assemblyID}_R2_u.7.sam I=${CloneID}_${assemblyID}_R2_u.8.sam O=${CloneID}_${assemblyID}.sam
 
 # 5. Convert the SAM file to the BAM file.
 echo "Converting the file from SAM to BAM format and removing non-primary alignments."
