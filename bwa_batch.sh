@@ -6,7 +6,7 @@
 #PBS -l walltime=1:00:00
 #PBS -q debug
 
-WD=/N/u/rtraborn/Carbonate/scratch/DaphniaVariantCall
+WD=/N/u/rtraborn/Carbonate/scratch/development/DaphniaVariantCall
 
 cd $WD
 
